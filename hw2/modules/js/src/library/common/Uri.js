@@ -21,30 +21,30 @@ define(function () {
                 val: function (url) {
                     assert(typeof url === "string", "Url must be a string!");
 
-                    this.__i.url = url;
+                    this._i.url = url;
 
-                    this.__i.parsedUrl = this.parseUrl(url);
+                    this._i.parsedUrl = this.i.parseUrl(url);
                 }
             },
             {
                 attributes: "public",
                 name: "getFragment",
                 val: function () {
-                    return this.getParsedUrl().fragment;
+                    return this.i.getParsedUrl().fragment;
                 }
             },
             {
                 attributes: "public",
                 name: "getParsedUrl",
                 val: function () {
-                    return this.__i.parsedUrl;
+                    return this._i.parsedUrl;
                 }
             },
             {
                 attributes: "public",
                 name: "getParam",
                 val: function (key) {
-                    var query = this.getParsedUrl().query;
+                    var query = this.i.getParsedUrl().query;
                     if (!query)
                         return;
 

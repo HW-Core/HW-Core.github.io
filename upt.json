@@ -9,5 +9,5 @@
   "dependencies": {
     "%hw2": "hw2-core/js-library-browser-common"
   },
-  "sandbox" : true
+  "sandbox": true
 }
