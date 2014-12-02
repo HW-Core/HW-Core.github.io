@@ -3,12 +3,12 @@
  * GNU General Public License version 3; see www.hyperweb2.com/terms/
  */
 
+'use strict';
 
 /*
- * DEFINES AND LEGACY
+ * VERY FIRST DEFINES AND LEGACY
+ * TODO: old code, re-organizing or remove
  */
-
-HW2_INBROWSER = typeof window !== "undefined";
 
 // ONLY FOR IE8-
 if (!Array.prototype.indexOf) {
@@ -29,90 +29,171 @@ Function.prototype.bind = function (scope) {
 
     return function () {
         return _function.apply(scope, arguments);
-    }
-}
+    };
+};
 
-// simple assertion
-if (typeof assert !== 'function') {
-    function assert (condition, message) {
-        if (!condition)
-            throw Error("Assert failed" + (typeof message !== "undefined" ? ": " + message : ""));
-    }
-    ;
-}
+var Bootstrap = (function () {
+    var Obj = function _Bootstrap () {
+    };
 
-// you should define HW2PATH_ROOT in your index.html
-HW2PATH_ROOT = typeof HW2PATH_ROOT !== "undefined" ? HW2PATH_ROOT : "../../../../../";
+    var pub = Obj.prototype;
+    var pub_static = Obj;
 
-// convert from relative to absolute
-if (HW2_INBROWSER) {
-    function escapeHTML (s) {
-        return s.split('&').join('&amp;').split('<').join('&lt;').split('"').join('&quot;');
-    }
-    function qualifyURL (url) {
-        var el = document.createElement('div');
-        el.innerHTML = '<a href="' + escapeHTML(url) + '">x</a>';
-        return el.firstChild.href;
-    }
+    var defRoot = "../../../../../";   // private static 
 
-    HW2PATH_ROOT = qualifyURL(HW2PATH_ROOT);
-} else {
-    var path = require("path");
-    HW2PATH_ROOT = path.resolve(HW2PATH_ROOT) + "/";
-}
+    var setGlobals = function (global, skipExtra) {
+//      global namespaced
+        global.hw2 = {
+            // magic define
+            set exports (module) {
+                this.define([], module);
+            },
+            Module: function (module) {
+                this.module = module;
+            },
+            /**
+             * requirejs alias
+             */
+            define: function () {
+                var args;
+                switch (arguments.length) {
+                    case 1:
+                        var def = arguments[0];
+                        args = [new hw2.Module(def)];
+                        break;
+                    case 2:
+                        var def = arguments[1];
+                        args = [arguments[0], new hw2.Module(def)];
+                        break;
+                    default:
+                        throw new SyntaxError("Invalid number of parameters");
+                }
 
-HW2PATH_CORE = HW2PATH_ROOT + "hw2/";
-HW2PATH_JS_SRC = HW2PATH_CORE + "modules/js/src/";
-HW2PATH_JS_KERNEL = HW2PATH_JS_SRC + "kernel/";
-HW2PATH_JS_LIB = HW2PATH_JS_SRC + "library/";
+                this.rdefine.apply(null, args);
+            },
+            rdefine: null
+        };
+
+        if (!skipExtra) {
+//      in environments without module system
+            try {
+                global.module = {};
+                global.exports = global.module.exports = global.hw2.exports;
+            } catch (e) {
+                // nothing to do  
+            }
+        }
+    };
 
 
-if (HW2_INBROWSER) {
-    var requirejs;
+    pub.setPaths = function (root) {
+        this.defines.PATH_ROOT = root;
+        this.defines.PATH_CORE = root + "hw2/";
+        this.defines.PATH_JS_SRC = this.defines.PATH_CORE + "modules/js/src/";
+        this.defines.PATH_JS_KERNEL = this.defines.PATH_JS_SRC + "kernel/";
+        this.defines.PATH_JS_LIB = this.defines.PATH_JS_SRC + "library/";
+    };
 
-    function loadKernel () {
-        requirejs = require.config({
-            context: 'Hw2Core'
+    pub.initBrowser = function () {
+        function escapeHTML (s) {
+            return s.split('&').join('&amp;').split('<').join('&lt;').split('"').join('&quot;');
+        }
+        function qualifyURL (url) {
+            var el = document.createElement('div');
+            el.innerHTML = '<a href="' + escapeHTML(url) + '">#</a>';
+            return el.firstChild.href;
+        }
+
+        var rootPath = document.currentScript.getAttribute("data-hw2-path-root") || window["HW2PATH_ROOT"] || defRoot;
+        rootPath = qualifyURL(rootPath);
+
+        this.setPaths(rootPath);
+        that = this;
+
+        function loadKernel (defines) {
+            setGlobals(window);
+
+            var req = requirejs.config({
+            });
+
+            req([defines.PATH_JS_KERNEL + "Core.js"], function (Hw2Core) {
+                Hw2Core.const = that.defines;
+
+                Hw2Core.I(function () {
+                    if (typeof window[afterScript] === "function") {
+                        window[afterScript].call(this);
+                    } else {
+                        this.Loader.load(afterScript);
+                    }
+                });
+            });
+        }
+
+        var afterScript = document.currentScript.getAttribute("data-hw2-after-boot") || window["HW2_AFTERBOOT"];
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        var that = this;
+        if (script.readyState) {  //IE
+            script.onreadystatechange = function () {
+                if (script.readyState === "loaded" || script.readyState === "complete") {
+                    script.onreadystatechange = null;
+                    loadKernel(that.defines);
+                }
+            };
+        } else {  //Others
+            script.onload = function () {
+                loadKernel(that.defines);
+            };
+        }
+
+        script.src = this.defines.PATH_CORE + 'modules/dep/requirejs/requirejs/index.js';
+        document.currentScript.parentNode.appendChild(script);
+    };
+
+    pub.initNode = function (rootPath, callback) {
+        var path = require("path");
+        rootPath = rootPath || defRoot;
+        // convert from relative to absolute
+        rootPath = path.resolve(rootPath) + "/";
+
+        this.setPaths(rootPath);
+
+        var requirejs = require(this.defines.PATH_CORE + 'modules/dep/requirejs/r/index.js').config({
+            //Pass the top-level main.js/index.js require
+            //function to requirejs so that node modules
+            //are loaded relative to the top-level JS file.
+            nodeRequire: require
         });
 
-        requirejs([HW2PATH_JS_KERNEL + "Core.js"], function (Hw2Core) {
-            if (typeof window[afterScript] === "function") {
-                window[afterScript](Hw2Core);
-            } else {
-                requirejs([afterScript]);
-            }
-        });
-    }
+        setGlobals(global, true);
 
-    var afterScript = document.currentScript.getAttribute("data-after-boot") || HW2_AFTERBOOT;
-    var script = document.createElement("script")
-    script.type = "text/javascript";
-    if (script.readyState) {  //IE
-        script.onreadystatechange = function () {
-            if (script.readyState === "loaded" || script.readyState === "complete") {
-                script.onreadystatechange = null;
-                loadKernel();
-            }
-        };
-    } else {  //Others
-        script.onload = function () {
-            loadKernel();
-        };
-    }
+        var Hw2Core = requirejs(this.defines.PATH_JS_KERNEL + "Core.js");
+        Hw2Core.const = this.defines;
 
-    script.src = HW2PATH_CORE + 'modules/dep/requirejs/requirejs/index.js';
-    document.currentScript.parentNode.appendChild(script);
-} else {
-    requirejs = require(HW2PATH_CORE + 'modules/dep/requirejs/r/index.js').config({
-        //Pass the top-level main.js/index.js require
-        //function to requirejs so that node modules
-        //are loaded relative to the top-level JS file.
-        context: 'Hw2Core',
-        nodeRequire: require
-    });
+        return Hw2Core.I(callback); // export default instance of hw2core
+    };
 
-    global.requirejs = requirejs;
-    global.define = requirejs.define;
+    pub.init = function () {
+        this.defines = {};
+        this.defines.IN_BROWSER = typeof window !== "undefined";
 
-    module.exports = requirejs(HW2PATH_JS_KERNEL + "Core.js");
-}
+        if (this.defines.IN_BROWSER) {
+            this.initBrowser();
+        } else {
+            module.exports = this.initNode.bind(this);
+        }
+    };
+
+
+    return Obj;
+
+})();
+
+/**
+ * INIT
+ * 
+ */
+
+var boot = new Bootstrap();
+
+boot.init();
