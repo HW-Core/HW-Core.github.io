@@ -2,7 +2,8 @@
   "name": "hw2/modules/js/src/library/browser/event",
   "license": "http://www.hyperweb2.com/terms",
   "dependencies": {
-    "%common": "hw2-core/js-library-browser-common#*"
+    "%common": "hw2-core/js-library-browser-common#*",
+    "%event": "hw2-core/js-library-event#*"
   },
   "devDependencies": {
     "%tests": "hw2-core/js-library-browser-event#tests",
