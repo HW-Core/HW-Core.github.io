@@ -27,14 +27,42 @@ define(function () {
         // scope.const.IN_BROWSER=requirejs.isBrowser;
 
         scope.global = scope.const.IN_BROWSER ? window : global;
-        scope.global.hw2.rdefine = define;
+        scope.global.hw2.__rdefine = define;
 
         scope.requirejs([
-            "hw2",
+            "hw2", // special path defined above
             // we use it also to pass the context for plugin
-            "hw2!" + scope.const.PATH_JS_KERNEL + "Loader.js",
-            "hw2!" + scope.const.PATH_JS_KERNEL + 'syntax.js'
-        ], function (reqPlg, Loader) {
+            "hw2!" + scope.const.PATH_JS_KERNEL + 'utils.js',
+            "hw2!" + scope.const.PATH_JS_KERNEL + "Loader.js"
+        ], function (reqPlg, utils, Loader) {
+            var $ = scope;
+            /**
+             * Alternatives for loading in PHP-style
+             */
+            Object.defineProperty($, "include", {
+                configurable: false,
+                writable: false,
+                value: $.Loader.load
+            });
+
+            Object.defineProperty($, "require", {
+                configurable: false,
+                writable: false,
+                value: $.Loader.load
+            });
+
+            Object.defineProperty($, "includeSync", {
+                configurable: false,
+                writable: false,
+                value: $.Loader.loadSync
+            });
+
+            Object.defineProperty($, "requireSync", {
+                configurable: false,
+                writable: false,
+                value: $.Loader.loadSync
+            });
+
             callback.apply(scope);
         });
 
@@ -48,10 +76,6 @@ define(function () {
 
     // private static
     var _instance = [];
-    var _runCallback = function (cb) {
-        if (typeof cb === "function")
-            cb();
-    };
 
     pub_static.const = {};
     pub_static.I = function (id, callback) {
@@ -59,9 +83,27 @@ define(function () {
         id = typeof id !== "string" ? 0 : id;
 
         if (typeof _instance[id] === "undefined") {
-            _instance[id] = new _Core(callback, id);
+            _instance[id] = {
+                loading: true,
+                inst: new _Core(function () {
+                    _instance[id].loading = false;
+                    if (typeof callback === "function")
+                        callback.apply(this, arguments)
+                }, id)};
         } else {
-            _runCallback(callback);
+            var wait = function () {
+                // if new instance has been commited but not loaded
+                // fully, we must wait before cast the callback
+                if (_instance[id].loading) {
+                    setTimeout(wait, 0); // maybe not the best way?
+                } else {
+                    if (typeof callback === "function") {
+                        callback.apply(_instance[id].inst);
+                    }
+                }
+            };
+
+            wait();
         }
 
         return _instance[id];

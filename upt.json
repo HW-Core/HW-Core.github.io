@@ -7,7 +7,7 @@
   ],
   "description": "Hw2Core Site",
   "dependencies": {
-    "%hw2": "hw2-core/js-library-browser-common"
+    "%application": "hw2-core/js-library-browser-application"
   },
   "sandbox": true
 }
