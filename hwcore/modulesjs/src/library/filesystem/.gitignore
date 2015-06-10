@@ -79,9 +79,10 @@ local.properties
 #
 
 .htaccess
-.upt.json
 tests/
+.upt.json
 doc/
+
 
 
 

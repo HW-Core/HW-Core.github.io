@@ -1,13 +1,13 @@
 {
-  "name": "Hw2CoreSite",
+  "name": "HWCoreSite",
   "version": "0.0.1",
   "homepage": "http://www.hyperweb2.com",
   "authors": [
     "Yehonal <hw.2@hotmail.it>"
   ],
-  "description": "Hw2Core Site",
+  "description": "HWCore Site",
   "dependencies": {
-    "%application": "hw2-core/js-library-browser-application"
+    "%application": "hw-core/js-library-browser-application"
   },
   "sandbox": true
 }
