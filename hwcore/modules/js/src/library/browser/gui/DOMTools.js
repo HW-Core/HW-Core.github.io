@@ -1,8 +1,3 @@
-/*
- * Copyright (C) 2007 - 2014 Hyperweb2 All rights reserved.
- * GNU General Public License version 3; see www.hyperweb2.com/terms/
- */
-
 'use strict';
 
 hwc.define([
@@ -11,9 +6,7 @@ hwc.define([
     var $ = this;
     $.Browser.DOMTools = $.Class({base: $.Path, members: [
             {
-                attributes: "static",
-                name: "redraw",
-                val: function () {
+                a: "static", n: "redraw", v: function () {
                     $.Browser.JQ('body').hide();
                     setTimeout(function () {
                         $.Browser.JQ('body').show();
@@ -21,18 +14,14 @@ hwc.define([
                 }
             },
             {
-                attributes: "static",
-                name: "removeScrollBar",
-                val: function (selector) {
+                a: "static", n: "removeScrollBar", v: function (selector) {
                     var text = $.Browser.JQ(selector);
                     text.wrapAll('<div style="overflow:hidden; height:' + text.height() + 'px; width:' + text.width() + 'px" />');
                     text.css("width", text.width() + (text.width() - text[0].scrollWidth));
                 }
             },
             {
-                attributes: "static",
-                name: "centerImage",
-                val: function (imgSelector) {
+                a: "static", n: "centerImage", v: function (imgSelector) {
                     var img = $.Browser.JQ(imgSelector);
                     // we need to wait image loading
                     img.load(function () {
@@ -52,6 +41,28 @@ hwc.define([
 
                         parent.css('text-align', 'center');
                     });
+                }
+            },
+            {
+                a: "public static ", n: "cloneId", v: function (idPrefix) {
+                    // get the last DIV which ID starts with ^= "idPrefix"
+                    var div = $.Browser.JQ('[id^="' + idPrefix + '-"]:last');
+
+                    // Read the Number from that DIV's ID
+                    // And increment that number by 1
+                    var _t = div.prop("id").split("-");
+                    if (_t.length == 1) {
+                        num = 1;
+                    } else {
+                        var num = _t[_t.length - 1];
+                        if (!$.Var.isNumeric(num))
+                            throw Error("Suffix of '" + idPrefix + "' is not a valid integer value");
+
+                        num++;
+                    }
+
+                    // Clone it and assign the new ID
+                    return div.clone().prop('id', idPrefix + "-" + num);
                 }
             }
         ]}

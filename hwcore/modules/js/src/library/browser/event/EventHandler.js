@@ -1,8 +1,3 @@
-/*
- * Copyright (C) 2007 - 2014 Hyperweb2 All rights reserved.
- * GNU General Public License version 3; see www.hyperweb2.com/terms/
- */
-
 'use strict';
 
 hwc.define([
@@ -21,9 +16,23 @@ hwc.define([
                 }
             },
             {
-                a: "public static", n: "replaceEventListner", v: function (element, event, handler, useCapture) {
-                    element.removeEventListener(event, handler);
-                    element.addEventListener(event, handler, false);
+                a: "public static", n: "setEventListner", v: function (element, event, handler, storedOnElem, useCapture) {
+                    if (typeof element == "string") {
+                        // get the native element
+                        element = $.Browser.JQ(element)[0];
+                    }
+
+                    if (storedOnElem) {
+                        if (element.__hwcRouteHandler)
+                            element.removeEventListener(event, element.__hwcRouteHandler);
+
+                        element.__hwcRouteHandler = handler;
+                    } else {
+                        element.removeEventListener(event, handler);
+                    }
+
+
+                    element.addEventListener(event, handler, useCapture);
                 }
             }
         ]}
