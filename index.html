@@ -1,54 +1,42 @@
 <html>
     <head>
-        <title>HWCore Js-Kernel Documentation</title>
+        <title>HWCore</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" type="text/css" href="styles/index.css">
-        <script type="text/javascript">
-            if (document.location.hostname !== "localhost" && document.location.hostname !== "127.0.0.1") {
-                HW2PATH_ROOT = "http://hw-core.github.io/";
-            } else { // for dev
-                HW2PATH_ROOT = "./";
-            }
-
-            // we must do it programmatically
-            HW2_AFTERBOOT = "web-content/js/index.html.js";
-            var head = document.getElementsByTagName('head')[0];
-            var script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = HW2PATH_ROOT + 'hwcore/modules/js/src/kernel/index.js';
-            head.appendChild(script);
-        </script>
+        <script src="https://hw-core.github.io/hwc-js-framework/srv/assets/js/hwc-js-framework.bundle.js"></script>
     </head>
     <body>
         <div id="main">
-            <div id="page">
-                <header>
-                    <img src="https://avatars0.githubusercontent.com/u/6638895?v=3&s=200"/>
-                    <h1><a href="https://hw-core.github.io">HWCore</a> -> 
-                        <a href="https://github.com/hw-core/js-kernel">JS-Kernel</a> 
-                        Documentation
-                    </h1>
-                </header>
-                <div id="left-menu">
-                    <ul id="left-menu-list">
-                        <li><a class="nav-home" href="#home">Home</a></li>
-                        <li><a class="nav-installation" href="#installation">Installation</a></li>
-                        <li><a class="nav-getting-started" href="#getting-started">Getting started</a></li>
-                        <li><a class="nav-how-to-create-a-module" href="#how-to-create-a-module">How to create a module</a></li>
-                        <li><a class="nav-loader" href="#loader">Loader</a></li>
-                        <li><a target="_blank" href="https://github.com/hw-core/js-kernel">Repository</a></li>
-                    </ul>
-                </div>
-                <div id="dyn-content">
-                    <noscript><h2>Javascript must be enabled in order to run this application</h2></noscript>
-                </div>
-                <div id="clear"></div>
-            </div>
-            <footer>
-                <small>Copyright by <a target="_blank" href="http://www.hyperweb2.com/terms">Hyperweb2</a>
-                    - Documentation created with <a href="https://hw-core.github.io">HWCore</a> framework</small> 
-            </footer>
+            <center>
+                <h1>HW-Core Framework</h1>
+                <h2>THIS PAGE IS UNDER CONSTRUCTION</h2>
+
+                Project documentations:
+                <ul style="list-style: none; line-height:40px">
+                    <li><a href="/js-kernel/">Js-Kernel</a></li>
+                    <li><a href="/js-lib-class/">Js-lib-Class</a></li>
+                </ul>
+                <script>
+                        const $ = hwc;
+                        var Expr = $.public.class(
+                            $.protected({
+                                x: undefined,
+                                y: undefined
+                            }),
+                            $.public("__construct", function (x, y) {
+                                this.i.x = x;
+                                this.i.y = y;
+                            }),
+                            $.public.final({
+                                sum: $.typeHint(Number, function () {
+                                    return this.i.x + this.i.y;
+                                })
+                            })
+                        );
+        
+                        document.write("If this sum is correct HW-Core is working on this page: 2+2 = "+new Expr(2, 2).sum());
+                    </script>
+            </center>
         </div>
     </body>
 </html>

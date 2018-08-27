@@ -74,16 +74,6 @@ local.properties
 .texlipse
 
 
-#
-# HWCore files
-#
-
-.htaccess
-.upt.json
-tests/
-doc/
-
-
 
 
 
